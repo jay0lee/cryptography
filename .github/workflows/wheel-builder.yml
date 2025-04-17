@@ -57,7 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         WINDOWS:
-          - {os: 'windows-11-arm', ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'arm64-pc-windows-msvc'}
+          - {os: 'windows-11-arm', ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'arch64-pc-windows-msvc'}
           - {os: 'windows-2019', ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.13"}
