@@ -9,9 +9,6 @@ on:
   # Do not add any non-tag push events without updating pypi-publish.yml. If
   # you do, it'll upload wheels to PyPI.
   push:
-    tags:
-      - '*.*'
-      - '*.*.*'
   pull_request:
     paths:
       - .github/workflows/wheel-builder.yml
@@ -86,10 +83,10 @@ jobs:
         with:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
-      - uses: dtolnay/rust-toolchain@888c2e1ea69ab0d4330cbf0af1ecc7b68f368cc1
-        with:
-          toolchain: stable
-          target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
+
+      - name: Install rust
+        run: |
+          choco install rust
 
       - uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         with:
@@ -100,6 +97,7 @@ jobs:
           name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
           path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Configure OpenSSL
         run: |
             echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
