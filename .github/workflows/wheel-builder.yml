@@ -84,7 +84,7 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
 
-      - uses: jay0lee/rust-toolchain@latest
+      - uses: jay0lee/rust-toolchain@0670fab76b6bb4fc760697fd3b2ae51e27581a98
         with:
           toolchain: stable
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
