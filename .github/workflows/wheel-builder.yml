@@ -107,6 +107,10 @@ jobs:
         shell: bash
       - run: mkdir wheelhouse
       - run: |
+          echo "BUILD REQ PATH:"
+          echo -e "$BUILD_REQUIREMENTS_PATH"
+          echo "UV_REQUIREMENTS_PATH"
+          echo -e "$UV_REQUIREMENTS_PATH"
           uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz -o wheelhouse/
         shell: bash
 
