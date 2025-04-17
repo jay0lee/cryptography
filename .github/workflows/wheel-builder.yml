@@ -57,9 +57,8 @@ jobs:
       fail-fast: false
       matrix:
         WINDOWS:
-          - {ARCH: 'arm64', WINDOWS: 'win-arm64', RUST_TRIPLE: 'arm64-pc-windows-msvc'}
+          - {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'arm64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "3.11", "ABI_VERSION": "py37"}
           - {VERSION: "3.11", "ABI_VERSION": "py39"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
     steps:
