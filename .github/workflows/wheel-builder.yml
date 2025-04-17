@@ -84,9 +84,10 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
 
-      - name: Install rust
-        run: |
-          choco install rust
+      - uses: dtolnay/rust-toolchain@888c2e1ea69ab0d4330cbf0af1ecc7b68f368cc1
+        with:
+          toolchain: stable
+          target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
       - uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
         with:
