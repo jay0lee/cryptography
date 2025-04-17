@@ -59,8 +59,8 @@ jobs:
         WINDOWS:
           - {ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'arm64-pc-windows-msvc'}
         PYTHON:
-          - {VERSION: "3.11", "ABI_VERSION": "py39"}
-    name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }} ${{ matrix.PYTHON.ABI_VERSION }}"
+          - {VERSION: "3.13"}
+    name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }}"
     steps:
       - name: Get build-requirements.txt from repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -107,11 +107,7 @@ jobs:
         shell: bash
       - run: mkdir wheelhouse
       - run: |
-          if [ -n "${{ matrix.PYTHON.ABI_VERSION }}" ]; then
-              PY_LIMITED_API="--config-settings=build-args=--features=pyo3/abi3-${{ matrix.PYTHON.ABI_VERSION }}"
-          fi
-
-          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz $PY_LIMITED_API -o wheelhouse/
+          uv build --wheel --require-hashes --build-constraint=$BUILD_REQUIREMENTS_PATH cryptography*.tar.gz -o wheelhouse/
         shell: bash
 
       - run: uv venv
@@ -124,5 +120,5 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}-${{ matrix.PYTHON.ABI_VERSION }}"
+          name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
           path: wheelhouse\
