@@ -108,6 +108,7 @@ jobs:
       #    target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
       - name: Get latest stable OpenSSL source
+        shell: bash
         if: matrix.goal == 'build' && steps.cache-python-ssl.outputs.cache-hit != 'true'
         run: |
           mkdir -vp "${GITHUB_WORKSPACE}/src"
@@ -122,10 +123,11 @@ jobs:
 
       - name: Windows NASM Install
         uses: ilammy/setup-nasm@v1
-        if: matrix.goal == 'build' && runner.os == 'Windows' && runner.arch == 'X64' && steps.cache-python-ssl.outputs.cache-hit != 'true'
+        if: runner.os == 'Windows' && runner.arch == 'X64'
 
       - name: Config OpenSSL
         if: matrix.goal == 'build' && steps.cache-python-ssl.outputs.cache-hit != 'true'
+        shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
@@ -142,6 +144,7 @@ jobs:
           mv -v /usr/bin/link /usr/bin/gnulink
 
       - name: Make OpenSSL
+        shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
@@ -151,6 +154,7 @@ jobs:
           make
 
       - name: Install OpenSSL
+        shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # install_sw saves us ages processing man pages :-)
@@ -171,6 +175,7 @@ jobs:
           esac
 
       - name: Run OpenSSL
+        shell: bash
         run: |
           "${OPENSSL_DIR}/bin/openssl" version -a
           file "${OPENSSL_DIR}/bin/openssl"
