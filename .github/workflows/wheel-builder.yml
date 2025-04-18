@@ -144,7 +144,7 @@ jobs:
           if ([ "$RUNNER_OS" == "Windows" ] && [ "$RUNNER_ARCH" == "ARM64" ]); then
             export CFLAGS=-DNO_INTERLOCKEDOR64
           fi
-          make
+          nmake
 
       - name: Install OpenSSL
         shell: bash
