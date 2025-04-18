@@ -88,6 +88,12 @@ jobs:
           python-version: ${{ matrix.PYTHON.VERSION }}
           architecture: ${{ matrix.WINDOWS.ARCH }}
 
+      - name: Windows Configure VCode
+        uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+        with:
+          arch: ${{ runner.arch }}
+
       - name: Install rustup (Windows 11 ARM64)
         shell: pwsh
         run: |
