@@ -19,6 +19,10 @@ on:
 env:
   BUILD_REQUIREMENTS_PATH: .github/requirements/build-requirements.txt
   UV_REQUIREMENTS_PATH: .github/requirements/uv-requirements.txt
+  OPENSSL_CONFIG_OPTS: no-fips --api=3.0.0
+  OPENSSL_DIR: ${{ github.workspace }}/bin/ssl
+  OPENSSL_SOURCE_PATH: ${{ github.workspace }}/src/openssl
+  OPENSSL_STATIC: 1
 
 jobs:
   sdist:
@@ -103,21 +107,73 @@ jobs:
       #    toolchain: stable
       #    target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
-      - uses: dawidd6/action-download-artifact@07ab29fd4a977ae4d2b275087cf67563dfdf0295 # v9
-        with:
-          repo: pyca/infra
-          workflow: build-windows-openssl.yml
-          branch: main
-          workflow_conclusion: success
-          name: "openssl-${{ matrix.WINDOWS.WINDOWS }}"
-          path: "C:/openssl-${{ matrix.WINDOWS.WINDOWS }}/"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure OpenSSL
+      - name: Get latest stable OpenSSL source
+        if: matrix.goal == 'build' && steps.cache-python-ssl.outputs.cache-hit != 'true'
         run: |
-            echo "OPENSSL_DIR=C:/openssl-${{ matrix.WINDOWS.WINDOWS }}" >> $GITHUB_ENV
-            echo "OPENSSL_STATIC=1" >> $GITHUB_ENV
+          mkdir -vp "${GITHUB_WORKSPACE}/src"
+          cd "${GITHUB_WORKSPACE}/src"
+          git clone https://github.com/openssl/openssl.git
+          cd "${OPENSSL_SOURCE_PATH}"
+          export LATEST_STABLE_TAG=$(git tag --list openssl-* | grep -v alpha | grep -v beta | sort -Vr | head -n1)
+          echo "Checking out version ${LATEST_STABLE_TAG}"
+          git checkout "${LATEST_STABLE_TAG}"
+          export COMPILED_OPENSSL_VERSION=${LATEST_STABLE_TAG:8} # Trim the openssl- prefix
+          echo "COMPILED_OPENSSL_VERSION=${COMPILED_OPENSSL_VERSION}" >> $GITHUB_ENV
+
+      - name: Windows NASM Install
+        uses: ilammy/setup-nasm@v1
+        if: matrix.goal == 'build' && runner.os == 'Windows' && runner.arch == 'X64' && steps.cache-python-ssl.outputs.cache-hit != 'true'
+
+      - name: Config OpenSSL
+        if: matrix.goal == 'build' && steps.cache-python-ssl.outputs.cache-hit != 'true'
+        run: |
+          cd "${OPENSSL_SOURCE_PATH}"
+          # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
+          if ([ "$RUNNER_OS" == "Windows" ] && [ "$RUNNER_ARCH" == "ARM64" ]); then
+            export CFLAGS=-DNO_INTERLOCKEDOR64
+          fi
+          # --libdir=lib is needed so Python can find OpenSSL libraries
+          "${PERL}" ./Configure --libdir=lib --prefix="${OPENSSL_DIR}" $OPENSSL_CONFIG_OPTS
+
+      - name: Rename GNU link on Windows
+        if: runner.os == 'Windows'
         shell: bash
+        run: |
+          mv -v /usr/bin/link /usr/bin/gnulink
+
+      - name: Make OpenSSL
+        run: |
+          cd "${OPENSSL_SOURCE_PATH}"
+          # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
+          if ([ "$RUNNER_OS" == "Windows" ] && [ "$RUNNER_ARCH" == "ARM64" ]); then
+            export CFLAGS=-DNO_INTERLOCKEDOR64
+          fi
+          make
+
+      - name: Install OpenSSL
+        run: |
+          cd "${OPENSSL_SOURCE_PATH}"
+          # install_sw saves us ages processing man pages :-)
+          make install_sw
+          if [[ "${RUNNER_OS}" != "Windows" ]]; then
+            echo "LDFLAGS=-L${OPENSSL_DIR}/lib" >> $GITHUB_ENV
+          fi
+          echo "CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1" >> $GITHUB_ENV
+          case $RUNNER_ARCH in
+            X64)
+              echo "CFLAGS=-I${OPENSSL_DIR}/include ${CFLAGS}" >> $GITHUB_ENV
+              echo "ARCHFLAGS=-arch x86_64" >> $GITHUB_ENV
+              ;;
+            ARM64)
+              echo "CFLAGS=-I${OPENSSL_DIR}/include ${CFLAGS}" >> $GITHUB_ENV
+              echo "ARCHFLAGS=-arch arm64" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Run OpenSSL
+        run: |
+          "${OPENSSL_DIR}/bin/openssl" version -a
+          file "${OPENSSL_DIR}/bin/openssl"
 
       - run: pip install -r "${UV_REQUIREMENTS_PATH}"
         shell: bash
