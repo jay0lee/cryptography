@@ -102,14 +102,8 @@ jobs:
           rustup install stable
           rustup target add aarch64-pc-windows-msvc
 
-      #- uses: jay0lee/rust-toolchain@0670fab76b6bb4fc760697fd3b2ae51e27581a98
-      #  with:
-      #    toolchain: stable
-      #    target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
-
       - name: Get latest stable OpenSSL source
         shell: bash
-        if: matrix.goal == 'build' && steps.cache-python-ssl.outputs.cache-hit != 'true'
         run: |
           mkdir -vp "${GITHUB_WORKSPACE}/src"
           cd "${GITHUB_WORKSPACE}/src"
@@ -126,7 +120,6 @@ jobs:
         if: runner.os == 'Windows' && runner.arch == 'X64'
 
       - name: Config OpenSSL
-        if: matrix.goal == 'build' && steps.cache-python-ssl.outputs.cache-hit != 'true'
         shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
