@@ -125,7 +125,7 @@ jobs:
             export CFLAGS=-DNO_INTERLOCKEDOR64
           fi
           # --libdir=lib is needed so Python can find OpenSSL libraries
-          "c:\strawberry\perl\bin\perl.exe" ./Configure VC-WIN64-ARM --libdir=lib --prefix="$OPENSSL_DIR" $OPENSSL_CONFIG_OPTS
+          "c:\strawberry\perl\bin\perl.exe" ./Configure VC-WIN64-ARM --prefix="$OPENSSL_DIR" $OPENSSL_CONFIG_OPTS
 
       - name: Rename GNU link on Windows
         if: runner.os == 'Windows'
@@ -148,18 +148,7 @@ jobs:
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # install_sw saves us ages processing man pages :-)
-          nmake install_sw
-          echo "CRYPTOGRAPHY_SUPPRESS_LINK_FLAGS=1" >> $GITHUB_ENV
-          case $RUNNER_ARCH in
-            X64)
-              echo "CFLAGS=-I${OPENSSL_DIR}/include ${CFLAGS}" >> $GITHUB_ENV
-              echo "ARCHFLAGS=-arch x86_64" >> $GITHUB_ENV
-              ;;
-            ARM64)
-              echo "CFLAGS=-I${OPENSSL_DIR}/include ${CFLAGS}" >> $GITHUB_ENV
-              echo "ARCHFLAGS=-arch arm64" >> $GITHUB_ENV
-              ;;
-          esac
+          nmake install
 
       - name: Run OpenSSL
         shell: bash
