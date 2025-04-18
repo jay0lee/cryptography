@@ -128,7 +128,7 @@ jobs:
             export CFLAGS=-DNO_INTERLOCKEDOR64
           fi
           # --libdir=lib is needed so Python can find OpenSSL libraries
-          c:\strawberry\perl\bin\perl.exe ./Configure --libdir=lib --prefix="${OPENSSL_DIR}" $OPENSSL_CONFIG_OPTS
+          "c:\strawberry\perl\bin\perl.exe" ./Configure --libdir=lib --prefix="$OPENSSL_DIR" $OPENSSL_CONFIG_OPTS
 
       - name: Rename GNU link on Windows
         if: runner.os == 'Windows'
