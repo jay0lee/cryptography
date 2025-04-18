@@ -1,6 +1,6 @@
 name: Wheel Builder
 permissions:
-  contents: read
+  contents: write
 on:
   workflow_dispatch:
     inputs:
@@ -58,7 +58,7 @@ jobs:
       matrix:
         WINDOWS:
           - {os: 'windows-11-arm', ARCH: 'arm64', WINDOWS: 'arm64', RUST_TRIPLE: 'aarch64-pc-windows-msvc'}
-          - {os: 'windows-2019', ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
+          #- {os: 'windows-2019', ARCH: 'x64', WINDOWS: 'win64', RUST_TRIPLE: 'x86_64-pc-windows-msvc'}
         PYTHON:
           - {VERSION: "3.13"}
     name: "${{ matrix.PYTHON.VERSION }} ${{ matrix.WINDOWS.WINDOWS }}"
@@ -127,4 +127,14 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
-          path: wheelhouse\
+          path: wheelhouse/*.whl
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          automatic_release_tag: "latest"
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: false
+          title: "Wheel Build"
+          files: |
+            wheelhouse/*.whl
