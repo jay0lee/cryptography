@@ -177,11 +177,12 @@ jobs:
       #  shell: bash
       #- run: uv pip install cryptography --no-index -f wheelhouse/
       
-    - name: Build  wheel
-      uses: pypa/cibuildwheel@v2.23.2
-      with:
-        only: cp313-win_arm64
-        package-dir: cryptography
+      - name: Build  wheel
+        uses: pypa/cibuildwheel@v2.23.2
+        with:
+          only: cp313-win_arm64
+          package-dir: cryptography
+ 
       - name: Print the OpenSSL we built and linked against
         run: |
             echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run -
