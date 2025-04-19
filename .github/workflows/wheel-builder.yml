@@ -82,7 +82,8 @@ jobs:
         with:
           name: cryptography-sdist
 
-      - run: |
+      - name: untar cryptography
+        run: |
           tar xvvf cryptography.tar.gz
           ls -al
 
