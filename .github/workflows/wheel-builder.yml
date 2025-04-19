@@ -78,14 +78,11 @@ jobs:
             ${{ env.UV_REQUIREMENTS_PATH }}
           sparse-checkout-cone-mode: false
 
-      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          name: cryptography-sdist
-
-      - name: untar cryptography
-        run: |
-          tar xvvf cryptography.tar.gz
-          ls -al
+          ref: "44.0.2"
+          repository: "pyca/cryptography"
+          persist-credentials: false
 
       - name: Setup python
         uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
@@ -177,7 +174,7 @@ jobs:
       #  shell: bash
       #- run: uv pip install cryptography --no-index -f wheelhouse/
       
-      - name: Build  wheel
+      - name: Build wheel
         uses: pypa/cibuildwheel@v2.23.2
         with:
           only: cp313-win_arm64
