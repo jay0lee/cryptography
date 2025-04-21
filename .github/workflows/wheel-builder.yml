@@ -186,8 +186,8 @@ jobs:
           "$PYTHON" -m pip install --upgrade wheel
           "$PYTHON" -m pip install --upgrade setuptools
 
-       - name: download latest crypto version
-         run: |
+      - name: download latest crypto version
+        run: |
           git clone https://github.com/pyca/cryptography.git
           cd cryptography
           export latest_release=$(git tag --list | sort -Vr | head -n1)
