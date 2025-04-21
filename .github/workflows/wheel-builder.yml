@@ -55,8 +55,12 @@ jobs:
       - name: Get latest stable OpenSSL source
         shell: bash
         run: |
-          mkdir -vp "${GITHUB_WORKSPACE}/src"
-          cd "${GITHUB_WORKSPACE}/src"
+          SRC_PATH="${GITHUB_WORKSPACE}\src"
+          echo "SRC_PATH is ${SRC_PATH}"
+          SRC_PATH=$(cygpath -u "$SRC_PATH")
+          echo "SRC_PATH is ${SRC_PATH}"
+          mkdir -vp "$SRC_PATH}"
+          cd "$SRC_PATH"
           git clone https://github.com/openssl/openssl.git
           cd "${OPENSSL_SOURCE_PATH}"
           export LATEST_STABLE_TAG=$(git tag --list openssl-* | grep -v alpha | grep -v beta | sort -Vr | head -n1)
