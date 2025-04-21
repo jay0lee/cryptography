@@ -52,13 +52,12 @@ jobs:
           target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
 
       - name: Get latest stable OpenSSL source
-        shell: bash
         run: |
           SRC_PATH="${GITHUB_WORKSPACE}\src"
           echo "SRC_PATH is ${SRC_PATH}"
           SRC_PATH=$(cygpath -u "$SRC_PATH")
           echo "SRC_PATH is ${SRC_PATH}"
-          mkdir -vp "$SRC_PATH}"
+          mkdir -vp "$SRC_PATH"
           cd "$SRC_PATH"
           git clone https://github.com/openssl/openssl.git
           cd "${OPENSSL_SOURCE_PATH}"
@@ -73,7 +72,6 @@ jobs:
         if: runner.os == 'Windows' && runner.arch == 'X64'
 
       - name: Config OpenSSL
-        shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
@@ -85,12 +83,10 @@ jobs:
 
       - name: Rename GNU link on Windows
         if: runner.os == 'Windows'
-        shell: bash
         run: |
           mv -v /usr/bin/link /usr/bin/gnulink
 
       - name: Make OpenSSL
-        shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
@@ -100,14 +96,12 @@ jobs:
           nmake
 
       - name: Install OpenSSL
-        shell: bash
         run: |
           cd "${OPENSSL_SOURCE_PATH}"
           # install_sw saves us ages processing man pages :-)
           nmake install
 
       - name: Run OpenSSL
-        shell: bash
         run: |
           "${OPENSSL_DIR}/bin/openssl" version -a
           file "${OPENSSL_DIR}/bin/openssl"
