@@ -214,14 +214,15 @@ jobs:
 
       - name: Build wheels
         run: |
+          cd cryptography
           CIBW_PLATFORM="windows"
           CIBW_ARCHS_WINDOWS="ARM64"
           "$PYTHON" -m cibuildwheel --output-dir wheelhouse
 
       - name: Install wheel
         run: |
-          ls -l wheelhosue/
-          "$PYTHON" -m pip install wheelhouse/*.whl
+          ls -l cryptography/wheelhosue/
+          "$PYTHON" -m pip install cryptography/wheelhouse/*.whl
 
       - name: Print the OpenSSL we built and linked against
         run: |
@@ -230,7 +231,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
-          path: wheelhouse/*.whl
+          path: cryptography/wheelhouse/*.whl
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -240,4 +241,4 @@ jobs:
           draft: false
           title: "Wheel Build"
           files: |
-            wheelhouse/*.whl
+            cryptography/wheelhouse/*.whl
