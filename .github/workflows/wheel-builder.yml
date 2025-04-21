@@ -159,10 +159,10 @@ jobs:
           echo "Copying our OpenSSL to ${env:OPENSSL_EXT_TARGET_PATH}"
           mkdir "${env:OPENSSL_EXT_TARGET_PATH}\include\openssl\"
           Copy-Item -Path "${env:OPENSSL_SOURCE_PATH}\LICENSE.txt" -Destination "${env:OPENSSL_EXT_TARGET_PATH}\LICENSE"
-          cp -v "$env:OPENSSL_INSTALL_PATH\lib\*" "${env:OPENSSL_EXT_TARGET_PATH}"
-          cp -v "$env:OPENSSL_INSTALL_PATH\bin\*" "${env:OPENSSL_EXT_TARGET_PATH}"
-          cp -v "$env:OPENSSL_INSTALL_PATH\include\openssl\*" "${env:OPENSSL_EXT_TARGET_PATH}\include\openssl\"
-          cp -v "$env:OPENSSL_INSTALL_PATH\include\openssl\applink.c" "${env:OPENSSL_EXT_TARGET_PATH}\include\"
+          cp -v "$env:OPENSSL_DIR\lib\*" "${env:OPENSSL_EXT_TARGET_PATH}"
+          cp -v "$env:OPENSSL_DIR\bin\*" "${env:OPENSSL_EXT_TARGET_PATH}"
+          cp -v "$env:OPENSSL_DIR\include\openssl\*" "${env:OPENSSL_EXT_TARGET_PATH}\include\openssl\"
+          cp -v "$env:OPENSSL_DIR\include\openssl\applink.c" "${env:OPENSSL_EXT_TARGET_PATH}\include\"
           LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PYTHON_SOURCE_PATH}/PCbuild/arm64"
           echo "PYTHON=${PYTHON_SOURCE_PATH}/PCbuild/arm64/python.exe" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
