@@ -134,6 +134,9 @@ jobs:
           git checkout "${LATEST_STABLE_TAG}"
           export COMPILED_PYTHON_VERSION=${LATEST_STABLE_TAG:1} # Trim the "v" prefix
           echo "COMPILED_PYTHON_VERSION=${COMPILED_PYTHON_VERSION}" >> $GITHUB_ENV
+          LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PYTHON_SOURCE_PATH}/PCbuild/arm64"
+          echo "PYTHON=${PYTHON_SOURCE_PATH}/PCbuild/arm64/python.exe" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Windows Get External Python deps
         shell: powershell
@@ -162,10 +165,6 @@ jobs:
           cp -v "$env:OPENSSL_DIR\lib\*" "${env:OPENSSL_EXT_TARGET_PATH}"
           cp -v "$env:OPENSSL_DIR\bin\*" "${env:OPENSSL_EXT_TARGET_PATH}"
           cp -v "$env:OPENSSL_DIR\include\openssl\*" "${env:OPENSSL_EXT_TARGET_PATH}\include\openssl\"
-          cp -v "$env:OPENSSL_DIR\include\openssl\applink.c" "${env:OPENSSL_EXT_TARGET_PATH}\include\"
-          LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PYTHON_SOURCE_PATH}/PCbuild/arm64"
-          echo "PYTHON=${PYTHON_SOURCE_PATH}/PCbuild/arm64/python.exe" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Windows Install sphinx-build
         shell: powershell
