@@ -203,7 +203,7 @@ jobs:
 
       - name: Install wheel
         run: |
-          ls -l cryptography/wheelhosue/
+          ls -l cryptography/wheelhouse/
           "$PYTHON" -m pip install cryptography/wheelhouse/*.whl
 
       - name: Print the OpenSSL we built and linked against
