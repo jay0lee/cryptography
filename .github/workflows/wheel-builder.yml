@@ -199,16 +199,31 @@ jobs:
           "$PYTHON" -m pip install --upgrade wheel
           "$PYTHON" -m pip install --upgrade setuptools
 
-      - name: Build wheel
-        uses: pypa/cibuildwheel@v2.23.2
-        with:
-          only: cp313-win_arm64
-          package-dir: cryptography
- 
+      #- name: Build wheel
+      #  uses: pypa/cibuildwheel@v2.23.2
+      #  with:
+      #    only: cp313-win_arm64
+      #    package-dir: cryptography
+
+      - name: Install cibuildwheel
+        run: |
+          "$PYTHON" -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: |
+          CIBW_PLATFORM="windows"
+          CIBW_ARCHS_WINDOWS="ARM64"
+          "$PYTHON" -m cibuildwheel --output-dir wheelhouse
+
+      - name: Install wheel
+        run: |
+          ls -l wheelhosue/
+          "$PYTHON" -m pip install wheelhouse/*.whl
+
       - name: Print the OpenSSL we built and linked against
         run: |
-            echo "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))" | uv run -
-
+            "$PYTHON" -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+          
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "cryptography-${{ github.event.inputs.version }}-${{ matrix.WINDOWS.WINDOWS }}-${{ matrix.PYTHON.VERSION }}"
