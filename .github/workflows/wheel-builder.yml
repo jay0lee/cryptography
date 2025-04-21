@@ -4,7 +4,6 @@ permissions:
 defaults:
   run:
     shell: bash
-    working-directory: src
 on:
   workflow_dispatch:
     inputs:
