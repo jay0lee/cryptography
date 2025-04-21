@@ -40,23 +40,7 @@ jobs:
             WINDOWS: 'arm64'
             RUST_TRIPLE: 'aarch64-pc-windows-msvc'
     steps:
-      - name: Get build-requirements.txt from repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          # The tag to build or the tag received by the tag event
-          ref: ${{ github.event.inputs.version || github.ref }}
-          persist-credentials: false
-          sparse-checkout: |
-            ${{ env.BUILD_REQUIREMENTS_PATH }}
-            ${{ env.UV_REQUIREMENTS_PATH }}
-          sparse-checkout-cone-mode: false
-
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: "44.0.2"
-          repository: "pyca/cryptography"
-          persist-credentials: false
-
+      
       - name: Windows Configure VCode
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
@@ -202,11 +186,12 @@ jobs:
           "$PYTHON" -m pip install --upgrade wheel
           "$PYTHON" -m pip install --upgrade setuptools
 
-      #- name: Build wheel
-      #  uses: pypa/cibuildwheel@v2.23.2
-      #  with:
-      #    only: cp313-win_arm64
-      #    package-dir: cryptography
+       - name: download latest crypto version
+         run: |
+          git clone https://github.com/pyca/cryptography.git
+          cd cryptography
+          export latest_release=$(git tag --list | sort -Vr | head -n1)
+          git checkout "${latest_release}"
 
       - name: Install cibuildwheel
         run: |
