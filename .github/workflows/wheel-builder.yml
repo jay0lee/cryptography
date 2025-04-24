@@ -9,8 +9,8 @@ on:
     inputs:
       version:
         description: The version to build
-  # Do not add any non-tag push events without updating pypi-publish.yml. If
-  # you do, it'll upload wheels to PyPI.
+  schedule:
+    - cron: '37 12 * * *'
   push:
   pull_request:
     paths:
@@ -37,19 +37,20 @@ jobs:
           - os: 'windows-11-arm'
             ARCH: 'arm64'
             WINDOWS: 'arm64'
-            RUST_TRIPLE: 'aarch64-pc-windows-msvc'
+            RUST_TRIPLE: ''
     steps:
       
       - name: Windows Configure VCode
         uses: ilammy/msvc-dev-cmd@v1
-        if: runner.os == 'Windows'
         with:
           arch: ${{ runner.arch }}
 
-      - uses: jay0lee/rust-toolchain@0670fab76b6bb4fc760697fd3b2ae51e27581a98
-        with:
-          toolchain: stable
-          target: ${{ matrix.WINDOWS.RUST_TRIPLE }}
+      #- uses: jay0lee/rust-toolchain@0670fab76b6bb4fc760697fd3b2ae51e27581a98
+      #  with:
+      #    toolchain: stable
+      #    target: aarch64-pc-windows-msvc
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Get latest stable OpenSSL source
         run: |
