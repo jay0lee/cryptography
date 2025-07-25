@@ -200,6 +200,7 @@ jobs:
           cd cryptography
           CIBW_PLATFORM="windows"
           CIBW_ARCHS_WINDOWS="ARM64"
+          CIBW_BUILD="cp313-win_arm64*"
           "$PYTHON" -m cibuildwheel --output-dir wheelhouse
 
       - name: Install wheel
