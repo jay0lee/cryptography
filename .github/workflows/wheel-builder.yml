@@ -29,7 +29,13 @@ jobs:
           - os: 'windows-11-arm'
     steps:
 
-      - run: echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Windows Configure VCode
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ARM64
+
+      - run: |
+          echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> "$GITHUB_ENV"
         
       - run: vcpkg install openssl:arm64-windows-static-md
         
