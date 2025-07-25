@@ -45,13 +45,6 @@ jobs:
         with:
           arch: ${{ runner.arch }}
 
-      #- uses: jay0lee/rust-toolchain@0670fab76b6bb4fc760697fd3b2ae51e27581a98
-      #  with:
-      #    toolchain: stable
-      #    target: aarch64-pc-windows-msvc
-
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-
       - name: Get latest stable OpenSSL source
         run: |
           SRC_PATH="${GITHUB_WORKSPACE}\src"
