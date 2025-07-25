@@ -37,13 +37,14 @@ jobs:
       - run: |
           echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> "$GITHUB_ENV"
         
-      - run: vcpkg install openssl:arm64-windows-static-md
+      - run: |
+          vcpkg install openssl:arm64-windows-static-md
         
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.X'
+      #- uses: actions/setup-python@v5
+      #  with:
+      #    python-version: '3.X'
 
       - name: Rename GNU link on Windows
         run: |
