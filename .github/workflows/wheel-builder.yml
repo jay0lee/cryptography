@@ -32,13 +32,14 @@ jobs:
       - name: Windows Configure VCode
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: ARM64
+          arch: ${{ runner.arch }}
 
       - run: |
           echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> "$GITHUB_ENV"
         
       - run: |
-          vcpkg install openssl:arm64-windows-static-md
+          #vcpkg install openssl:arm64-windows-static-md
+          vcpkg install openssl
         
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
