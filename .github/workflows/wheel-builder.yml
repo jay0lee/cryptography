@@ -45,6 +45,10 @@ jobs:
         with:
           python-version: '3.X'
 
+      - name: Rename GNU link on Windows
+        run: |
+          mv -v /usr/bin/link /usr/bin/gnulink
+
       - name: Upgrade pip, wheel, etc
         run: |
           python3 -m pip install --upgrade pip
