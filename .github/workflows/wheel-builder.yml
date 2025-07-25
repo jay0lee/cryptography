@@ -19,14 +19,6 @@ on:
       - pyproject.toml
       - vectors/pyproject.toml
 
-env:
-  BUILD_REQUIREMENTS_PATH: .github/requirements/build-requirements.txt
-  UV_REQUIREMENTS_PATH: .github/requirements/uv-requirements.txt
-  OPENSSL_CONFIG_OPTS: no-fips --api=3.0.0
-  OPENSSL_DIR: ${{ github.workspace }}/bin/ssl
-  OPENSSL_SOURCE_PATH: ${{ github.workspace }}/src/openssl
-  PYTHON_INSTALL_PATH: ${{ github.workspace }}/bin/python
-  PYTHON_SOURCE_PATH: ${{ github.workspace }}/src/cpython
 jobs:
   windows:
     runs-on: windows-11-arm
@@ -35,147 +27,15 @@ jobs:
       matrix:
         include:
           - os: 'windows-11-arm'
-            ARCH: 'arm64'
-            WINDOWS: 'arm64'
-            RUST_TRIPLE: ''
     steps:
-      
-      - name: Windows Configure VCode
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ runner.arch }}
 
-      - name: Get latest stable OpenSSL source
-        run: |
-          SRC_PATH="${GITHUB_WORKSPACE}\src"
-          echo "SRC_PATH is ${SRC_PATH}"
-          SRC_PATH=$(cygpath -u "$SRC_PATH")
-          echo "SRC_PATH is ${SRC_PATH}"
-          mkdir -vp "$SRC_PATH"
-          cd "$SRC_PATH"
-          git clone https://github.com/openssl/openssl.git
-          cd "${OPENSSL_SOURCE_PATH}"
-          export LATEST_STABLE_TAG=$(git tag --list openssl-* | grep -v alpha | grep -v beta | sort -Vr | head -n1)
-          echo "Checking out version ${LATEST_STABLE_TAG}"
-          git checkout "${LATEST_STABLE_TAG}"
-          export COMPILED_OPENSSL_VERSION=${LATEST_STABLE_TAG:8} # Trim the openssl- prefix
-          echo "COMPILED_OPENSSL_VERSION=${COMPILED_OPENSSL_VERSION}" >> $GITHUB_ENV
-
-      - name: Windows NASM Install
-        uses: ilammy/setup-nasm@v1
-        if: runner.os == 'Windows' && runner.arch == 'X64'
-
-      - name: Config OpenSSL
-        run: |
-          cd "${OPENSSL_SOURCE_PATH}"
-          # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
-          if ([ "$RUNNER_OS" == "Windows" ] && [ "$RUNNER_ARCH" == "ARM64" ]); then
-            export CFLAGS=-DNO_INTERLOCKEDOR64
-          fi
-          # --libdir=lib is needed so Python can find OpenSSL libraries
-          "c:\strawberry\perl\bin\perl.exe" ./Configure VC-WIN64-ARM --prefix="$OPENSSL_DIR" # $OPENSSL_CONFIG_OPTS
-
-      - name: Rename GNU link on Windows
-        if: runner.os == 'Windows'
-        run: |
-          mv -v /usr/bin/link /usr/bin/gnulink
-
-      - name: Make OpenSSL
-        run: |
-          cd "${OPENSSL_SOURCE_PATH}"
-          # TODO: remove this once https://github.com/openssl/openssl/issues/26239 is fixed.
-          if ([ "$RUNNER_OS" == "Windows" ] && [ "$RUNNER_ARCH" == "ARM64" ]); then
-            export CFLAGS=-DNO_INTERLOCKEDOR64
-          fi
-          nmake
-
-      - name: Install OpenSSL
-        run: |
-          cd "${OPENSSL_SOURCE_PATH}"
-          # install_sw saves us ages processing man pages :-)
-          nmake install
-
-      - name: Run OpenSSL
-        run: |
-          "${OPENSSL_DIR}/bin/openssl" version -a
-          file "${OPENSSL_DIR}/bin/openssl"
-
-      - name: Get latest stable Python source
-        run: |
-          cd "${GITHUB_WORKSPACE}/src"
-          git clone https://github.com/python/cpython.git
-          cd "${PYTHON_SOURCE_PATH}"
-          export LATEST_STABLE_TAG=$(git tag --list | grep -v a | grep -v rc | grep -v b | sort -Vr | head -n1)
-          git checkout "${LATEST_STABLE_TAG}"
-          export COMPILED_PYTHON_VERSION=${LATEST_STABLE_TAG:1} # Trim the "v" prefix
-          echo "COMPILED_PYTHON_VERSION=${COMPILED_PYTHON_VERSION}" >> $GITHUB_ENV
-          LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PYTHON_SOURCE_PATH}/PCbuild/arm64"
-          echo "PYTHON=${PYTHON_SOURCE_PATH}/PCbuild/arm64/python.exe" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-
-      - name: Windows Get External Python deps
-        shell: powershell
-        run: |
-          cd "${env:PYTHON_SOURCE_PATH}"
-          PCBuild\get_externals.bat
-
-      - name: Windows overwrite external OpenSSL with local
-        shell: powershell
-        run: |
-          cd "${env:PYTHON_SOURCE_PATH}"
-          $env:OPENSSL_EXT_PATH = "$(Get-Item externals\openssl-bin-* | Select -exp FullName)\"
-          echo "External OpenSSL was downloaded to ${env:OPENSSL_EXT_PATH}"
-          Remove-Item -recurse -force "${env:OPENSSL_EXT_PATH}*"
-          # Emulate what this script does:
-          # https://github.com/python/cpython/blob/main/PCbuild/openssl.vcxproj
-          if (${env:RUNNER_ARCH} -eq "X64") {
-            $env:ossl_path = "amd64"
-          } elseif (${env:RUNNER_ARCH} -eq "ARM64") {
-            $env:ossl_path =  "arm64"
-          }
-          $env:OPENSSL_EXT_TARGET_PATH = "${env:OPENSSL_EXT_PATH}${env:ossl_path}"
-          echo "Copying our OpenSSL to ${env:OPENSSL_EXT_TARGET_PATH}"
-          mkdir "${env:OPENSSL_EXT_TARGET_PATH}\include\openssl\"
-          Copy-Item -Path "${env:OPENSSL_SOURCE_PATH}\LICENSE.txt" -Destination "${env:OPENSSL_EXT_TARGET_PATH}\LICENSE"
-          cp -v "$env:OPENSSL_DIR\lib\*" "${env:OPENSSL_EXT_TARGET_PATH}"
-          cp -v "$env:OPENSSL_DIR\bin\*" "${env:OPENSSL_EXT_TARGET_PATH}"
-          cp -v "$env:OPENSSL_DIR\include\openssl\*" "${env:OPENSSL_EXT_TARGET_PATH}\include\openssl\"
-
-      - name: Windows Install sphinx-build
-        shell: powershell
-        run: |
-          pip install --upgrade pip
-          pip install --upgrade sphinx
-          sphinx-build --version
-
-      - name: Windows Config/Build Python
-        shell: powershell
-        run: |
-          cd "${env:PYTHON_SOURCE_PATH}"
-          # We need out custom openssl.props which uses OpenSSL 3 DLL names
-          Copy-Item -Path "${env:GITHUB_WORKSPACE}\src\tools\openssl.props" -Destination PCBuild\ -Verbose
-          if (${env:RUNNER_ARCH} -eq "X64") {
-            $env:arch = "x64"
-            PCBuild\build.bat -c Release -p $env:arch --pgo
-          } elseif (${env:RUNNER_ARCH} -eq "ARM64") {
-            $env:arch =  "ARM64"
-            # TODO: figure out why Windows ARM64 isn't compat with PGO optimiazation
-            # causes 10-20% slowdown in Python
-            PCBuild\build.bat -c Release -p $env:arch
-          }
-
-      - name: Run Python
-        run: |
-          "${PYTHON}" -V
-          "${PYTHON}" -c "import ssl; print(f'Using {ssl.OPENSSL_VERSION}')"
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Upgrade pip, wheel, etc
         run: |
-          curl $curl_retry -O https://bootstrap.pypa.io/get-pip.py
-          "$PYTHON" get-pip.py
-          "$PYTHON" -m pip install --upgrade pip
-          "$PYTHON" -m pip install --upgrade wheel
-          "$PYTHON" -m pip install --upgrade setuptools
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --upgrade wheel
+          python3 -m pip install --upgrade setuptools
 
       - name: download latest crypto version
         run: |
@@ -186,7 +46,7 @@ jobs:
 
       - name: Install cibuildwheel
         run: |
-          "$PYTHON" -m pip install cibuildwheel
+          python3 -m pip install cibuildwheel
 
       - name: Build wheels
         run: |
@@ -194,16 +54,16 @@ jobs:
           export CIBW_PLATFORM="windows"
           export CIBW_ARCHS_WINDOWS="ARM64"
           export CIBW_BUILD="cp39-*"
-          "$PYTHON" -m cibuildwheel --output-dir wheelhouse
+          python3 -m cibuildwheel --output-dir wheelhouse
 
       - name: Install wheel
         run: |
           ls -l cryptography/wheelhouse/
-          "$PYTHON" -m pip install cryptography/wheelhouse/*.whl
+          python3 -m pip install cryptography/wheelhouse/*.whl
 
       - name: Print the OpenSSL we built and linked against
         run: |
-            "$PYTHON" -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
+            python3 -c "from cryptography.hazmat.backends.openssl.backend import backend;print('Loaded: ' + backend.openssl_version_text());print('Linked Against: ' + backend._ffi.string(backend._lib.OPENSSL_VERSION_TEXT).decode('ascii'))"
           
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
