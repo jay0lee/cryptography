@@ -198,9 +198,9 @@ jobs:
       - name: Build wheels
         run: |
           cd cryptography
-          CIBW_PLATFORM="windows"
-          CIBW_ARCHS_WINDOWS="ARM64"
-          CIBW_BUILD="cp39-*"
+          export CIBW_PLATFORM="windows"
+          export CIBW_ARCHS_WINDOWS="ARM64"
+          export CIBW_BUILD="cp39-*"
           "$PYTHON" -m cibuildwheel --output-dir wheelhouse
 
       - name: Install wheel
