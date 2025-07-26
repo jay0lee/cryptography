@@ -38,8 +38,7 @@ jobs:
           echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> "$GITHUB_ENV"
         
       - run: |
-          #vcpkg install openssl:arm64-windows-static-md
-          vcpkg install openssl
+          vcpkg install openssl:arm64-windows-static-md
         
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
